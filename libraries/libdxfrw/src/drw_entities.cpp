@@ -156,17 +156,25 @@ bool DRW_Entity::parseDxfGroups(int code, dxfReader *reader){
     std::list<DRW_Variant> ls;
     DRW_Variant curr;
     int nc;
+    bool store = false;
     std::string appName= reader->getString();
     if (!appName.empty() && appName.at(0)== '{'){
         curr.addString(code, appName.substr(1, (int) appName.size()-1));
         ls.push_back(curr);
-        while (code !=102 && appName.at(0)== '}'){
-            reader->readRec(&nc);//RLZ curr.code = code or nc?
+        store = true;
+        while (store) { // ((code !=102) || (appName.at(0)!= '}')){
+            reader->readRec(&code);//RLZ curr.code = code or nc? TODO leer code
 //            curr.code = code;
             //RLZ code == 330 || code == 360 OR nc == 330 || nc == 360 ?
             if (code == 330 || code == 360)
                 curr.addInt(code, reader->getHandleString());//RLZ code or nc
-            else {
+            else if (code == 102) {
+                appName = reader->getString();
+                if (!appName.empty() && appName.at(0)=='}')
+                    store = false;
+                else { // TODO no implementado diccionarios anidados?
+                }
+            } else {
                 switch (reader->type) {
                 case dxfReader::STRING:
                     curr.addString(code, reader->getString());//RLZ code or nc
@@ -185,7 +193,8 @@ bool DRW_Entity::parseDxfGroups(int code, dxfReader *reader){
                     break;
                 }
             }
-            ls.push_back(curr);
+            if (store)
+                ls.push_back(curr);
         }
     }
 

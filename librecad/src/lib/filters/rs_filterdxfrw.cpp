@@ -2312,7 +2312,6 @@ void RS_FilterDXFRW::writeEntity(RS_Entity* e){
     }
 }
 
-
 /**
  * Writes the given Point entity to the file.
  */
@@ -3224,6 +3223,30 @@ void RS_FilterDXFRW::setEntityAttributes(RS_Entity* entity,
     pen.setWidth(numberToWidth(attrib->lWeight));
 
     entity->setPen(pen);
+
+    // XData:
+    entity->xData.clear();
+    std::list<DRW_Variant> xData;
+    QString appName;
+    for (std::vector<std::shared_ptr<DRW_Variant>>::const_iterator itData = attrib->extData.begin();
+         itData != attrib->extData.end() ;
+         ++ itData) {
+        switch (itData->get()->code()) {
+        case 1001:
+            appName = itData->get()->content.s->c_str();
+            xData.clear();
+            break;
+        case 1002:
+            if (itData->get()->content.s->at(0) == '}') {
+                entity->xData[appName] = xData;
+            }
+            xData.clear();
+            break;
+        default:
+            xData.push_back(*itData->get());
+        }
+    }
+
     RS_DEBUG->print("RS_FilterDXF::setEntityAttributes: OK");
 }
 
@@ -3262,6 +3285,26 @@ void RS_FilterDXFRW::getEntityAttributes(DRW_Entity* ent, const RS_Entity* entit
     ent->color24 = exact_rgb;
     ent->lWeight = width;
     ent->lineType = lineType.toUtf8().data();
+
+    // xData
+    if (!entity->xData.empty()) {
+        ent->extData.clear();
+        for (std::map<QString, std::list<DRW_Variant>>::const_iterator itData = entity->xData.begin();
+             itData != entity->xData.end();
+             ++itData) {
+            DRW_Variant head(1001, itData->first.toStdString());
+            ent->extData.push_back(std::make_shared<DRW_Variant>(head));
+            DRW_Variant start(1002, "{");
+            ent->extData.push_back(std::make_shared<DRW_Variant>(start));
+            for (std::list<DRW_Variant>::const_iterator itValor = itData->second.begin();
+                 itValor != itData->second.end();
+                 ++itValor) {
+                ent->extData.push_back(std::make_shared<DRW_Variant>(*itValor));
+            }
+            DRW_Variant ending(1002, "}");
+            ent->extData.push_back(std::make_shared<DRW_Variant>(ending));
+        }
+    }
 }
 
 

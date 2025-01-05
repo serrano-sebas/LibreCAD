@@ -49,6 +49,7 @@ public:
     bool writeTextstyle(DRW_Textstyle *ent);
     bool writeVport(DRW_Vport *ent);
     bool writeAppId(DRW_AppId *ent);
+    void writeExtDataEntity(std::vector<std::shared_ptr<DRW_Variant>> xData);
     bool writePoint(DRW_Point *ent);
     bool writeLine(DRW_Line *ent);
     bool writeRay(DRW_Ray *ent);

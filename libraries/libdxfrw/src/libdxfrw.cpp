@@ -667,6 +667,19 @@ bool dxfRW::writeAppId(DRW_AppId *ent){
     return true;
 }
 
+void dxfRW::writeExtDataEntity(std::vector<std::shared_ptr<DRW_Variant>> xData) {
+    // conversor de datos para aprovechar writeExtData existente
+    if (!xData.empty()) {
+        std::vector<DRW_Variant *> extData;
+        for (std::vector<std::shared_ptr<DRW_Variant>>::iterator it = xData.begin();
+             it != xData.end();
+             ++it) {
+            extData.push_back(it->get());
+        }
+        writeExtData(extData);
+    }
+}
+
 bool dxfRW::writePoint(DRW_Point *ent) {
     writer->writeString(0, "POINT");
     writeEntity(ent);
@@ -677,6 +690,9 @@ bool dxfRW::writePoint(DRW_Point *ent) {
     writer->writeDouble(20, ent->basePoint.y);
     if (ent->basePoint.z != 0.0) {
         writer->writeDouble(30, ent->basePoint.z);
+    }
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
     }
     return true;
 }
@@ -697,6 +713,9 @@ bool dxfRW::writeLine(DRW_Line *ent) {
     } else {
         writer->writeDouble(11, ent->secPoint.x);
         writer->writeDouble(21, ent->secPoint.y);
+    }
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
     }
     return true;
 }
@@ -720,6 +739,9 @@ bool dxfRW::writeRay(DRW_Ray *ent) {
         writer->writeDouble(11, crd.x);
         writer->writeDouble(21, crd.y);
     }
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -742,6 +764,9 @@ bool dxfRW::writeXline(DRW_Xline *ent) {
         writer->writeDouble(11, crd.x);
         writer->writeDouble(21, crd.y);
     }
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -757,6 +782,9 @@ bool dxfRW::writeCircle(DRW_Circle *ent) {
         writer->writeDouble(30, ent->basePoint.z);
     }
     writer->writeDouble(40, ent->radious);
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -777,6 +805,9 @@ bool dxfRW::writeArc(DRW_Arc *ent) {
     }
     writer->writeDouble(50, ent->staangle*ARAD);
     writer->writeDouble(51, ent->endangle*ARAD);
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -804,6 +835,9 @@ bool dxfRW::writeEllipse(DRW_Ellipse *ent){
         ent->toPolyline(&pol, elParts);
         writePolyline(&pol);
     }
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -825,6 +859,9 @@ bool dxfRW::writeTrace(DRW_Trace *ent){
     writer->writeDouble(13, ent->fourPoint.x);
     writer->writeDouble(23, ent->fourPoint.y);
     writer->writeDouble(33, ent->fourPoint.z);
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -846,6 +883,9 @@ bool dxfRW::writeSolid(DRW_Solid *ent){
     writer->writeDouble(13, ent->fourPoint.x);
     writer->writeDouble(23, ent->fourPoint.y);
     writer->writeDouble(33, ent->fourPoint.z);
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -868,6 +908,9 @@ bool dxfRW::write3dface(DRW_3Dface *ent){
     writer->writeDouble(23, ent->fourPoint.y);
     writer->writeDouble(33, ent->fourPoint.z);
     writer->writeInt16(70, ent->invisibleflag);
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -899,6 +942,9 @@ bool dxfRW::writeLWPolyline(DRW_LWPolyline *ent){
         }
     } else {
         //RLZ: TODO convert lwpolyline in polyline (not exist in acad 12)
+    }
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
     }
     return true;
 }
@@ -994,6 +1040,9 @@ bool dxfRW::writePolyline(DRW_Polyline *ent) {
     }
     writer->writeString(0, "SEQEND");
     writeEntity(ent);
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -1036,6 +1085,9 @@ bool dxfRW::writeSpline(DRW_Spline *ent){
         }
     } else {
         //RLZ: TODO convert spline in polyline (not exist in acad 12)
+    }
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
     }
     return true;
 }
@@ -1122,6 +1174,9 @@ bool dxfRW::writeHatch(DRW_Hatch *ent){
             writer->writeInt16(78, ent->deflines);
         }*/
         writer->writeInt32(98, 0);
+        if (!ent->extData.empty()){
+            writeExtDataEntity(ent->extData);
+        }
     } else {
         //RLZ: TODO verify in acad12
     }
@@ -1148,6 +1203,9 @@ bool dxfRW::writeLeader(DRW_Leader *ent){
             writer->writeDouble(10, vert->x);
             writer->writeDouble(20, vert->y);
             writer->writeDouble(30, vert->z);
+        }
+        if (!ent->extData.empty()){
+            writeExtDataEntity(ent->extData);
         }
     } else  {
         //RLZ: todo not supported by acad 12 saved as unnamed block
@@ -1268,6 +1326,9 @@ bool dxfRW::writeDimension(DRW_Dimension *ent) {
         default:
             break;
         }
+        if (!ent->extData.empty()){
+            writeExtDataEntity(ent->extData);
+        }
     } else  {
         //RLZ: todo not supported by acad 12 saved as unnamed block
     }
@@ -1293,6 +1354,9 @@ bool dxfRW::writeInsert(DRW_Insert *ent){
     writer->writeInt16(71, ent->rowcount);
     writer->writeDouble(44, ent->colspace);
     writer->writeDouble(45, ent->rowspace);
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -1333,6 +1397,9 @@ bool dxfRW::writeText(DRW_Text *ent){
     if (ent->alignV != DRW_Text::VBaseLine) {
         writer->writeInt16(73, ent->alignV);
     }
+    if (!ent->extData.empty()){
+        writeExtDataEntity(ent->extData);
+    }
     return true;
 }
 
@@ -1364,6 +1431,9 @@ bool dxfRW::writeMText(DRW_MText *ent){
         writer->writeInt16(73, ent->alignV);
         writer->writeDouble(44, ent->interlin);
 //RLZ ... 11, 21, 31 needed?
+        if (!ent->extData.empty()){
+            writeExtDataEntity(ent->extData);
+        }
     } else {
         //RLZ: TODO convert mtext in text lines (not exist in acad 12)
     }
@@ -1503,6 +1573,9 @@ bool dxfRW::writeBlock(DRW_Block *bk){
         writeAppData(bk->appData);
     }
     writer->writeString(1, "");
+    if (!bk->extData.empty()){
+        writeExtDataEntity(bk->extData);
+    }
 
     return true;
 }

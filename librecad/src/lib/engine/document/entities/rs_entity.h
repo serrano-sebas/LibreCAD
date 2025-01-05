@@ -30,6 +30,8 @@
 #define RS_ENTITY_H
 
 #include <map>
+#include <list>
+#include "drw_base.h"
 #include "rs_vector.h"
 #include "rs_pen.h"
 #include "rs_undoable.h"
@@ -611,6 +613,9 @@ m0 x + m1 y + m2 =0
     virtual bool isArcCircleLine() const;
 
     bool isParentIgnoredOnModifications() const;
+
+    std::map<QString, std::list<DRW_Variant>> xData;
+    std::map<QString, std::list<DRW_Variant>> extensionDictionary;
 
 protected:
 //! Entity's parent entity or nullptr is this entity has no parent.
